@@ -1,0 +1,229 @@
+<!-- name: your name here
+date:
+proposed points: number of proposed points (out of 20) 
+If I do not update this code to include my name and proposed points, 
+Professor Urness will email me and ask me to do so (and deduct a point as a penalty)
+-->
+
+<!DOCTYPE html>
+<html>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+//vertex shader -- Gouraud shading
+
+attribute vec4 vPosition;
+attribute vec4 vNormal;
+
+varying vec4 fColor;
+
+
+uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform vec4 lightPosition;
+uniform float shininess;
+
+void
+main()
+{
+    // pos is vertex position in camera coordinates (before projection)
+    vec3 pos = (modelViewMatrix * vPosition).xyz;
+    
+    // vector to light directional source
+    vec3 L = normalize(lightPosition.xyz);
+    
+    // the vector from the vertex position to the eye is -- the View vector     
+    vec3 V = -normalize( pos );
+
+    // Transform vertex normal into eye coordinates    
+    vec3 N = normalize( mat3(modelViewMatrix)*vNormal.xyz);
+
+    // Compute terms in the illumination equation
+    vec4 ambient = ambientProduct;
+
+    //your code here -- implement Gouraud Shading
+    vec4 diffuse = diffuseProduct * max(dot(N, L), 0.0);
+    vec3 H = normalize(L+V);
+    vec4 specular = specularProduct * max(pow(dot(H, N), shininess), 0.0);
+
+    gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+    
+    /* define the fColor value to pass on to fragment shader*/
+    fColor = ambient + diffuse + specular;
+    fColor.a = 1.0;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+//fragment shader -- Gouraud Shading
+// nothing to do here :).  Gouraud shading uses the colors defined at the vertices and 
+// interpolates the colors. Thus, the "default" fragment shader is sufficient.
+precision mediump float;
+
+varying vec4 fColor;
+
+void
+main()
+{
+    gl_FragColor = fColor;
+}
+</script>
+
+
+<script id="vertex-shader-phong" type="x-shader/x-vertex">
+//vertex shader -- Phong shading
+// Phong shading defines the N, L, and V vectors at each vertex, and passes them to the fragment shader
+// this code can stay the same
+
+attribute vec4 vPosition;
+attribute vec4 vNormal;
+varying vec3 N, L, V;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform vec4 lightPosition;
+
+void main()
+{
+    vec3 pos = (modelViewMatrix * vPosition).xyz;
+    
+    L = normalize(lightPosition.xyz);
+
+    V =  -normalize(pos);
+    N = normalize( mat3(modelViewMatrix)*vNormal.xyz);
+
+    gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+    
+}
+</script>
+
+<script id="fragment-shader-phong" type="x-shader/x-fragment">
+//fragment shader -- Phong shading
+
+precision mediump float;
+
+uniform vec4 ambientProduct;
+uniform vec4 diffuseProduct;
+uniform vec4 specularProduct;
+uniform float shininess;
+varying vec3 N, L, V;
+
+void main()
+{    
+    vec4 fColor;
+    
+    vec4 ambient = ambientProduct;
+
+    // your code here
+    // implement Phong shading
+    vec4 diffuse = diffuseProduct * max(dot(N, L), 0.0);
+
+    vec3 H = normalize(L+V);
+    vec4 specular = specularProduct * max(pow(dot(H,N), shininess), 0.0);
+
+
+    fColor = ambient + diffuse + specular;
+    fColor.a = 1.0;
+
+    gl_FragColor = fColor;
+}
+</script>
+
+
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="spherePoints.js"></script>
+<script type="text/javascript" src="shadedSphere.js"></script>
+
+<body>
+<div style="border-style: solid; border-width: 1px;
+width:490px; margin:0px; padding:10px; border-radius:0px;
+display: table;">
+  <div style="display: table-row">
+    <div "display: table-cell;">
+      <div>
+        <div>
+        MATERIAL Properties<br>
+        Ambient R <input id="ambientR" type="range" 
+        min="0" max="1" step=".01" value="1.0" /><span id="ambientRedMText">1.0</span><br>
+        Ambient G <input id="ambientG" type="range"
+         min="0" max="1" step=".01" value="0.0" /><span id="ambientGreenMText">0.0</span><br>
+        Ambient B <input id="ambientB" type="range"
+         min="0" max="1" step=".01" value="1.0" /><span id="ambientBlueMText">1.0</span><br>
+         <p>
+        Diffuse R <input id="diffuseR" type="range" 
+        min="0" max="1" step=".01" value="1.0" /><span id="diffuseRedMText">1.0</span><br>
+        Diffuse G <input id="diffuseG" type="range"
+         min="0" max="1" step=".01" value="0.8" /><span id="diffuseGreenMText">0.8</span><br>
+        Diffuse B <input id="diffuseB" type="range"
+         min="0" max="1" step=".01" value="0.0" /><span id="diffuseBlueMText">0.0</span><br>
+         <p>
+        Specular R <input id="specularR" type="range" 
+        min="0" max="1" step=".01" value="1.0" /><span id="specularRedMText">1.0</span><br>
+        Specular G <input id="specularG" type="range"
+         min="0" max="1" step=".01" value="1.0" /><span id="specularGreenMText">1.0</span><br>
+        Specular B <input id="specularB" type="range"
+         min="0" max="1" step=".01" value="1.0" /><span id="specularBlueMText">1.0</span><br>
+        <p>
+        Shininess <input id="shininessSlider" type="range"
+         min="2" max="200" step="1" value="20" /><span id="shininessText">20</span><br>
+ 
+         <hr width="80%"><p><p>
+         </div>
+         <div>
+          <select id="Controls" size="2">
+              <option value="0">Gouraud Shading</option>
+              <option value="1">Phong Shading</option>
+          </select>
+          </div>
+          <p>
+          <div>
+           subdivisions <input id="slider" type="range"
+           min="2" max="6" step="1" value="3" /><span id="subdivisionsText">3</span>
+          </div>
+        </div>
+    </div>
+    <div style="display: table-cell;">
+        <div>
+        LIGHT Properties <br>
+        Ambient R <input id="ambientRlight" type="range" 
+        min="0" max="1" step=".01" value="0.2" /><span id="ambientRedLText">0.2</span><br>
+        Ambient G <input id="ambientGlight" type="range"
+         min="0" max="1" step=".01" value="0.2" /><span id="ambientGreenLText">0.2</span><br>
+        Ambient B <input id="ambientBlight" type="range"
+         min="0" max="1" step=".01" value="0.2" /><span id="ambientBlueLText">0.2</span><br>
+         <p>
+        Diffuse R <input id="diffuseRlight" type="range" 
+        min="0" max="1" step=".01" value="1.0" /><span id="diffuseRedLText">1.0</span><br>
+        Diffuse G <input id="diffuseGlight" type="range"
+         min="0" max="1" step=".01" value="1.0" /><span id="diffuseGreenLText">1.0</span><br>
+        Diffuse B <input id="diffuseBlight" type="range"
+         min="0" max="1" step=".01" value="1.0" /><span id="diffuseBlueLText">1.0</span><br>
+         <p>
+        Specular R <input id="specularRlight" type="range" 
+        min="0" max="1" step=".01" value="1.0" /><span id="specularRedLText">1.0</span><br>
+        Specular G <input id="specularGlight" type="range"
+         min="0" max="1" step=".01" value="1.0" /><span id="specularGreenLText">1.0</span><br>
+        Specular B <input id="specularBlight" type="range"
+         min="0" max="1" step=".01" value="1.0" /><span id="specularBlueLText">1.0</span><br>
+         <hr><p><p>
+         LIGHT Position<br>
+          phi<input id="lsliderphi" type="range"
+           min="-1.5" max="1.5" step=".01" value="0" /><span id="lsliderphiText">0.0</span><br>
+          theta<input id="lslidertheta" type="range"
+           min="-1.5" max="1.5" step=".01" value="0" /><span id="lsliderthetaText">0.0</span><br>
+        </div>
+    </div>
+</div>
+
+
+</div>
+<p>
+    
+<canvas id="gl-canvas" width="512" height="512">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+</body>
+</html>
