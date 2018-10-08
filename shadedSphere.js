@@ -99,11 +99,15 @@ window.onload = function init() {
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
 
     document.getElementById("lsliderphi").onchange = function(event) {
-        //code to go here
+        phi = event.target.value;
+        document.getElementById("lsliderphiText").innerHTML = event.target.value;
+        init();
     };
 
     document.getElementById("lslidertheta").onchange = function(event) {
-        //code to go here
+        theta = event.target.value;
+        document.getElementById("lsliderthetaText").innerHTML = event.target.value;
+        init();
    };
 
     document.getElementById("slider").onchange = function(event) {
