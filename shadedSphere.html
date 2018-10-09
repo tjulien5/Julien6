@@ -1,8 +1,8 @@
-<!-- name: Tess Julien
+<!-- 
+name: Tess Julien
 date: October 7, 2018
-proposed points: number of proposed points (out of 20) 
-If I do not update this code to include my name and proposed points, 
-Professor Urness will email me and ask me to do so (and deduct a point as a penalty)
+proposed points: 20 (out of 20) 
+description: implementation of Gouraud shading and Phong shading models
 -->
 
 <!DOCTYPE html>
@@ -42,8 +42,11 @@ main()
     vec4 ambient = ambientProduct;
 
     //your code here -- implement Gouraud Shading
+    // calculate diffuse component
     vec4 diffuse = diffuseProduct * max(dot(N, L), 0.0);
+    // declare and initialize halfway vector
     vec3 H = normalize(L+V);
+    //calculate specular component
     vec4 specular = specularProduct * max(pow(dot(H, N), shininess), 0.0);
 
     gl_Position = projectionMatrix * modelViewMatrix * vPosition;
@@ -115,9 +118,13 @@ void main()
 
     // your code here
     // implement Phong shading
+    //calculate diffuse component
     vec4 diffuse = diffuseProduct * max(dot(N, L), 0.0);
 
+    // declare adn initialize halfway vector
     vec3 H = normalize(L+V);
+
+    //calculate specular component
     vec4 specular = specularProduct * max(pow(dot(H,N), shininess), 0.0);
 
 

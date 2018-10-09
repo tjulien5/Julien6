@@ -99,12 +99,14 @@ window.onload = function init() {
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
 
     document.getElementById("lsliderphi").onchange = function(event) {
+        // set phi to slider value
         phi = event.target.value;
         document.getElementById("lsliderphiText").innerHTML = event.target.value;
         init();
     };
 
     document.getElementById("lslidertheta").onchange = function(event) {
+        // set theta to slider value
         theta = event.target.value;
         document.getElementById("lsliderthetaText").innerHTML = event.target.value;
         init();
